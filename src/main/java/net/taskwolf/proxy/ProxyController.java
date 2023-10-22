@@ -42,7 +42,8 @@ public class ProxyController {
     var futureResponse = new CompletableFuture<String>();
     var uri = createUri(request);
     var requestBuilder = HttpRequest.newBuilder().uri(uri)
-      .method(method.name(), HttpRequest.BodyPublishers.ofString(body));
+      .method(method.name(), body == null ? HttpRequest.BodyPublishers.noBody() :
+        HttpRequest.BodyPublishers.ofString(body));
     applyHeaders(requestBuilder, request);
     var httpRequest = requestBuilder.build();
     httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
