@@ -43,7 +43,8 @@ public final class StatusCommand extends Command {
     var self = distributionConfiguration.self();
     log().info("Proxy (" + self.hostname()  + ":" + self.redisPort() + "): " +
       COLOR_GREEN + "CONNECTED" + COLOR_RESET);
-    log().info("Nodes: ");
+    var nodes = distributionConfiguration.nodes();
+    log().info("Nodes (" + nodes.size() + "):");
     for (var node : distributionConfiguration.nodes()) {
       var address = node.hostname() + ":" + node.redisPort();
       log().info(" - " + address + " " + (connectedNodes.contains(address) ?
