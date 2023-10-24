@@ -40,6 +40,8 @@ dependencies {
   implementation("org.json:json:20231013")
   implementation("commons-io:commons-io:2.14.0")
 
+  implementation("org.redisson:redisson:3.24.2")
+
   implementation("org.springframework.boot:spring-boot-starter-web:3.1.5")
 
   implementation("io.jsonwebtoken:jjwt:0.12.3")
