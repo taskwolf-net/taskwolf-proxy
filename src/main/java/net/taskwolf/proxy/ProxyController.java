@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.taskwolf.core.distribution.DistributionConfiguration;
 import net.taskwolf.core.distribution.Node;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,31 +37,28 @@ public class ProxyController {
   }
 
   @RequestMapping("/**")
-  public CompletableFuture<String> processRequest(
+  public CompletableFuture<ResponseEntity<byte[]>> processRequest(
     @RequestBody(required = false) String body, HttpMethod method,
     HttpServletRequest request, HttpServletResponse response
   ) throws Exception {
-    var futureResponse = new CompletableFuture<String>();
     var uri = createUri(request);
     var requestBuilder = HttpRequest.newBuilder().uri(uri)
       .method(method.name(), body == null ? HttpRequest.BodyPublishers.noBody() :
         HttpRequest.BodyPublishers.ofString(body));
     applyHeaders(requestBuilder, request);
     var httpRequest = requestBuilder.build();
-    httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
-      .thenAccept(httpResponse -> completeProcess(httpResponse, response, futureResponse));
-    return futureResponse;
+    return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofByteArray())
+      .thenApply(this::createResponseEntity);
   }
 
-  private void completeProcess(
-    HttpResponse<String> httpResponse, HttpServletResponse servletResponse,
-    CompletableFuture<String> futureResponse
-  ) {
+  private ResponseEntity<byte[]> createResponseEntity(HttpResponse<byte[]> httpResponse) {
+    var headers = new HttpHeaders();
     for (var header : httpResponse.headers().map().entrySet()) {
-      servletResponse.setHeader(header.getKey(), header.getValue().get(0));
+      headers.add(header.getKey(), header.getValue().get(0));
     }
-    servletResponse.setStatus(httpResponse.statusCode());
-    futureResponse.complete(httpResponse.body());
+    return ResponseEntity.ok()
+      .headers(headers)
+      .body(httpResponse.body());
   }
 
   private void applyHeaders(
