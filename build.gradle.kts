@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
   testImplementation(platform("org.junit:junit-bom:5.10.0"))
-  testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
 
   implementation("net.taskwolf:core:1.0.0-SNAPSHOT")
 
