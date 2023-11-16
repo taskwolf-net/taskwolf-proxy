@@ -2,11 +2,11 @@ package net.taskwolf.proxy;
 
 import net.taskwolf.core.command.CommandRegistry;
 import net.taskwolf.core.command.CommandTask;
-import net.taskwolf.core.command.implementation.ExitCommand;
 import net.taskwolf.core.distribution.DistributionConfiguration;
 import net.taskwolf.core.distribution.Node;
 import net.taskwolf.core.intro.Intro;
 import net.taskwolf.core.log.Log;
+import net.taskwolf.proxy.command.ExitCommand;
 import net.taskwolf.proxy.command.HelpCommand;
 import net.taskwolf.proxy.command.StatusCommand;
 import org.redisson.Redisson;
@@ -22,13 +22,14 @@ public class ProxyApplication {
       "host,connection,content-length");
     Intro.create("1.0.0").print();
     var log = Log.create("Proxy", "/logs/");
+    log.info("Initializing Taskwolf - Proxy");
     SpringApplication.run(ProxyApplication.class);
     var distributionConfiguration = DistributionConfiguration.createAndLoad();
     var redisson = initializeRedisson(distributionConfiguration);
     var commandRegistry = CommandRegistry.create();
     registerCommands(log, commandRegistry, distributionConfiguration, redisson);
     new Thread(() -> CommandTask.create(log, commandRegistry).start()).start();
-    log.info("Successfully booted Proxy");
+    log.info("Successfully booted Taskwolf - Proxy");
   }
 
   private static RedissonClient initializeRedisson(
