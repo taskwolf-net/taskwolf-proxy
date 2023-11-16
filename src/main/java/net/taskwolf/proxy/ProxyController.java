@@ -53,13 +53,8 @@ public class ProxyController {
 
   private ResponseEntity<byte[]> createResponseEntity(HttpResponse<byte[]> httpResponse) {
     var headers = new HttpHeaders();
-    for (var header : httpResponse.headers().map().entrySet()) {
-      if (header.getKey().toLowerCase().contains("access-control")) {
-        continue;
-      }
-      headers.add(header.getKey(), header.getValue().get(0));
-    }
-    return ResponseEntity.ok()
+    headers.add("Content-Type", "application/json");
+    return ResponseEntity.status(httpResponse.statusCode())
       .headers(headers)
       .body(httpResponse.body());
   }
