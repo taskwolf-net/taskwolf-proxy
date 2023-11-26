@@ -48,15 +48,28 @@ public class ProxyController {
     applyHeaders(requestBuilder, request);
     var httpRequest = requestBuilder.build();
     return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofByteArray())
-      .thenApply(this::createResponseEntity);
+      .thenApply(httpResponse -> createResponseEntity(response, httpResponse));
   }
 
-  private ResponseEntity<byte[]> createResponseEntity(HttpResponse<byte[]> httpResponse) {
+  private ResponseEntity<byte[]> createResponseEntity(
+    HttpServletResponse servletResponse, HttpResponse<byte[]> httpResponse
+  ) {
     var headers = new HttpHeaders();
+    if (httpResponse.statusCode() == 310) {
+      closePage(servletResponse);
+    }
     headers.add("Content-Type", "application/json");
     return ResponseEntity.status(httpResponse.statusCode())
       .headers(headers)
       .body(httpResponse.body());
+  }
+
+  private void closePage(HttpServletResponse servletResponse) {
+    try {
+      servletResponse.sendRedirect("https://taskwolf.net/close/");
+    } catch (Exception exception) {
+      exception.printStackTrace();
+    }
   }
 
   private void applyHeaders(
