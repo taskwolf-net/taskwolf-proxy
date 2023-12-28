@@ -1,6 +1,6 @@
 plugins {
   id("java")
-  id("org.springframework.boot") version "3.1.5"
+  id("org.springframework.boot") version "3.2.1"
 }
 
 group = "net.taskwolf"
@@ -28,7 +28,7 @@ dependencies {
 
   implementation("com.google.inject:guice:7.0.0")
 
-  implementation("com.google.guava:guava:32.1.3-jre")
+  implementation("com.google.guava:guava:33.0.0-jre")
 
   implementation("org.projectlombok:lombok:1.18.30")
   annotationProcessor("org.projectlombok:lombok:1.18.30")
@@ -38,11 +38,11 @@ dependencies {
   implementation("com.datastax.oss:java-driver-core:4.17.0")
 
   implementation("org.json:json:20231013")
-  implementation("commons-io:commons-io:2.15.0")
+  implementation("commons-io:commons-io:2.15.1")
 
-  implementation("org.redisson:redisson:3.24.3")
+  implementation("org.redisson:redisson:3.25.2")
 
-  implementation("org.springframework.boot:spring-boot-starter-web:3.1.5")
+  implementation("org.springframework.boot:spring-boot-starter-web:3.2.1")
 
   implementation("io.jsonwebtoken:jjwt:0.12.3")
 }
