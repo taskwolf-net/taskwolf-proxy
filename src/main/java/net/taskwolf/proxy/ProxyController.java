@@ -57,6 +57,8 @@ public class ProxyController {
     headers.add("Content-Type", "application/json");
     httpResponse.headers().firstValue("location").ifPresent(value ->
       headers.add("location", value));
+    httpResponse.headers().allValues("Set-Cookie").forEach(value ->
+      headers.add("Set-Cookie", value));
     return ResponseEntity.status(httpResponse.statusCode())
       .headers(headers)
       .body(httpResponse.body());
