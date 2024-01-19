@@ -1,7 +1,6 @@
 package net.taskwolf.proxy;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import net.taskwolf.core.distribution.DistributionConfiguration;
 import net.taskwolf.core.distribution.Node;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,7 +38,7 @@ public class ProxyController {
   @RequestMapping("/**")
   public CompletableFuture<ResponseEntity<byte[]>> processRequest(
     @RequestBody(required = false) String body, HttpMethod method,
-    HttpServletRequest request, HttpServletResponse response
+    HttpServletRequest request
   ) throws Exception {
     var uri = createUri(request);
     var requestBuilder = HttpRequest.newBuilder().uri(uri)
@@ -48,28 +47,19 @@ public class ProxyController {
     applyHeaders(requestBuilder, request);
     var httpRequest = requestBuilder.build();
     return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofByteArray())
-      .thenApply(httpResponse -> createResponseEntity(response, httpResponse));
+      .thenApply(this::createResponseEntity).exceptionally(throwable -> null);
   }
 
   private ResponseEntity<byte[]> createResponseEntity(
-    HttpServletResponse servletResponse, HttpResponse<byte[]> httpResponse
+    HttpResponse<byte[]> httpResponse
   ) {
     var headers = new HttpHeaders();
-    if (httpResponse.statusCode() == 310) {
-      closePage(servletResponse);
-    }
     headers.add("Content-Type", "application/json");
+    httpResponse.headers().firstValue("location").ifPresent(value ->
+      headers.add("location", value));
     return ResponseEntity.status(httpResponse.statusCode())
       .headers(headers)
       .body(httpResponse.body());
-  }
-
-  private void closePage(HttpServletResponse servletResponse) {
-    try {
-      servletResponse.sendRedirect("https://taskwolf.net/close/");
-    } catch (Exception exception) {
-      exception.printStackTrace();
-    }
   }
 
   private void applyHeaders(
