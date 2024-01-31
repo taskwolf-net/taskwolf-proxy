@@ -77,7 +77,8 @@ public class ProxyController {
 
   private URI createUri(HttpServletRequest request) throws Exception {
     var node = selectNode();
-    var uri = new URI("http", null, node.hostname(), node.restPort(), null, null, null);
+    var uri = new URI("http", null, node.hostname(), node.restPort(), null,
+      null, null);
     return UriComponentsBuilder.fromUri(uri)
       .path(request.getRequestURI())
       .query(request.getQueryString())
@@ -85,7 +86,8 @@ public class ProxyController {
   }
 
   private Node selectNode() {
-    var nodes = distributionConfiguration.nodes();
+    var nodes = distributionConfiguration.nodes().stream()
+      .filter(node -> node.type().isWorker()).toList();
     return nodes.get(random.nextInt(nodes.size()));
   }
 }
