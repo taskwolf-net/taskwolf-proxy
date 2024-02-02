@@ -1,4 +1,4 @@
-# Taskwolf - Core
+# Taskwolf - Proxy
 
 The proxy takes care of distributing the rest request throughout the system. It communicates with the nodes in the cluster to create a load balancing.
 
