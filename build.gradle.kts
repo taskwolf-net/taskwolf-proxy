@@ -44,7 +44,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-web:3.2.2")
 
-  implementation("io.jsonwebtoken:jjwt:0.12.4")
+  implementation("io.jsonwebtoken:jjwt:0.12.5")
 }
 
 tasks.test {
