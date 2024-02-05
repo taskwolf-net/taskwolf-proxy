@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
   testImplementation(platform("org.junit:junit-bom:5.10.2"))
-  testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 
   implementation("net.taskwolf:core:1.0.0-SNAPSHOT")
 
@@ -44,7 +44,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-web:3.2.2")
 
-  implementation("io.jsonwebtoken:jjwt:0.12.4")
+  implementation("io.jsonwebtoken:jjwt:0.12.5")
 }
 
 tasks.test {
