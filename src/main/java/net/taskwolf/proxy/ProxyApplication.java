@@ -4,6 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import net.taskwolf.core.command.CommandRegistry;
 import net.taskwolf.core.command.CommandTask;
+import net.taskwolf.core.command.implementation.ClearCommand;
 import net.taskwolf.core.command.implementation.DistributionCommand;
 import net.taskwolf.core.distribution.Distribution;
 import net.taskwolf.core.distribution.DistributionConfiguration;
@@ -23,7 +24,8 @@ public class ProxyApplication {
     System.setProperty("jdk.httpclient.allowRestrictedHeaders",
       "host,connection,content-length");
     var injector = Guice.createInjector(ProxyInjectionModule.create());
-    Intro.create("1.0.0").print();
+    System.out.print("\033c");
+    injector.getInstance(Intro.class).print();
     var log = injector.getInstance(Log.class);
     log.info("Initializing Taskwolf - Proxy");
     var application = new SpringApplication(ProxyApplication.class);
@@ -49,6 +51,7 @@ public class ProxyApplication {
   private static void registerCommands(
     CommandRegistry registry, Injector injector
   ) {
+    registry.register(injector.getInstance(ClearCommand.class));
     registry.register(injector.getInstance(HelpCommand.class));
     registry.register(injector.getInstance(DistributionCommand.class));
     registry.register(injector.getInstance(ExitCommand.class));
