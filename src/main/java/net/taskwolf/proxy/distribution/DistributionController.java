@@ -1,4 +1,4 @@
-package net.taskwolf.proxy;
+package net.taskwolf.proxy.distribution;
 
 import jakarta.servlet.http.HttpServletRequest;
 import net.taskwolf.core.distribution.DistributionConfiguration;
@@ -20,13 +20,13 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-public class ProxyController {
+public class DistributionController {
   private final HttpClient httpClient;
   private final String proxyToken;
   private final DistributionConfiguration distributionConfiguration;
   private final Random random = new Random();
 
-  private ProxyController(
+  private DistributionController(
     HttpClient httpClient, @Qualifier("proxyToken") String proxyToken,
     DistributionConfiguration distributionConfiguration
   ) {
