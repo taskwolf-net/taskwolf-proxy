@@ -42,6 +42,7 @@ public class ProxyApplication {
     registerCommands(commandRegistry, injector);
     application.setDefaultProperties(Collections.singletonMap("server.port",
       distributionConfiguration.self().restPort()));
+    application.addInitializers(injector.getInstance(ProxyContextInitializer.class));
     application.run(args);
     new Thread(() -> CommandTask.create(log, commandRegistry).start()).start();
     log.info("Successfully booted Taskwolf - Proxy");
