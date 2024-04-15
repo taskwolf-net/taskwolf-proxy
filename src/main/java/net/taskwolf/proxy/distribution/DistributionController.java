@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,15 +25,18 @@ public class DistributionController {
   private final HttpClient httpClient;
   private final String proxyToken;
   private final DistributionConfiguration distributionConfiguration;
+  private final DistributionExemptionRepository exemptionRepository;
   private final Random random = new Random();
 
   private DistributionController(
     HttpClient httpClient, @Qualifier("proxyToken") String proxyToken,
-    DistributionConfiguration distributionConfiguration
+    DistributionConfiguration distributionConfiguration,
+    DistributionExemptionRepository exemptionRepository
   ) {
     this.httpClient = httpClient;
     this.proxyToken = proxyToken;
     this.distributionConfiguration = distributionConfiguration;
+    this.exemptionRepository = exemptionRepository;
   }
 
   @RequestMapping("/**")
@@ -40,7 +44,7 @@ public class DistributionController {
     @RequestBody(required = false) String body, HttpMethod method,
     HttpServletRequest request
   ) throws Exception {
-    var uri = createUri(request);
+    var uri = createUri(request, body);
     var requestBuilder = HttpRequest.newBuilder().uri(uri)
       .method(method.name(), body == null ? HttpRequest.BodyPublishers.noBody() :
         HttpRequest.BodyPublishers.ofString(body));
@@ -75,8 +79,8 @@ public class DistributionController {
     requestBuilder.setHeader("PROXYTOKEN", proxyToken);
   }
 
-  private URI createUri(HttpServletRequest request) throws Exception {
-    var node = selectNode();
+  private URI createUri(HttpServletRequest request, String body) throws Exception {
+    var node = selectNode(request.getRequestURI(), body);
     var uri = new URI("http", null, node.hostname(), node.restPort(), null,
       null, null);
     return UriComponentsBuilder.fromUri(uri)
@@ -85,9 +89,22 @@ public class DistributionController {
       .build(true).toUri();
   }
 
-  private Node selectNode() {
+  private Node selectNode(String url, String body) {
+    var exemption = findResponsibleExemption(url);
+    if (exemption.isPresent()) {
+      var preference = exemption.get().preference(body);
+      if (preference.isPresent()) {
+        return preference.get();
+      }
+    }
     var nodes = distributionConfiguration.nodes().stream()
       .filter(node -> node.type().isWorker()).toList();
     return nodes.get(random.nextInt(nodes.size()));
+  }
+
+  private Optional<DistributionExemption> findResponsibleExemption(String url) {
+    return exemptionRepository.findAll().stream()
+      .filter(exemption -> url.contains(exemption.url()))
+      .findFirst();
   }
 }
