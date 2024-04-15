@@ -9,6 +9,8 @@ import net.taskwolf.core.command.Command;
 import net.taskwolf.core.command.CommandRegistry;
 import net.taskwolf.core.event.Hook;
 import net.taskwolf.core.event.HookRegistry;
+import net.taskwolf.proxy.distribution.DistributionExemption;
+import net.taskwolf.proxy.distribution.DistributionExemptionRepository;
 
 @Getter(AccessLevel.PROTECTED)
 @Accessors(fluent = true)
@@ -34,5 +36,15 @@ public abstract class ProxyModule {
 
   public void unregisterHook(Hook hook) {
     injector.getInstance(HookRegistry.class).unregister(hook);
+  }
+
+  public void registerDistributionExemption(DistributionExemption exemption) {
+    injector.getInstance(DistributionExemptionRepository.class)
+      .registerExemption(exemption);
+  }
+
+  public void unregisterDistributionExemption(DistributionExemption exemption) {
+    injector.getInstance(DistributionExemptionRepository.class)
+      .unregisterExemption(exemption);
   }
 }
