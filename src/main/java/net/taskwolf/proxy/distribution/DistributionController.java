@@ -39,6 +39,11 @@ public class DistributionController {
     this.exemptionRepository = exemptionRepository;
   }
 
+  @RequestMapping(path = "/v1/")
+  public String version() {
+    return "Taskwolf API - Version V1";
+  }
+
   @RequestMapping("/**")
   public CompletableFuture<ResponseEntity<byte[]>> processRequest(
     @RequestBody(required = false) String body, HttpMethod method,
