@@ -1,4 +1,4 @@
-FROM openjdk:20
+FROM openjdk:21
 
 COPY proxy-1.0.0-SNAPSHOT.jar proxy.jar
 COPY /configurations/ /configurations/
