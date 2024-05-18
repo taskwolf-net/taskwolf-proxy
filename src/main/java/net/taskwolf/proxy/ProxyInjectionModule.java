@@ -5,6 +5,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import net.taskwolf.core.CoreApplication;
+import net.taskwolf.proxy.distribution.ProxyDistributionInjectionModule;
 import net.taskwolf.proxy.log.ProxyLogInjectionModule;
 import net.taskwolf.proxy.module.ProxyModuleInjectionModule;
 import net.taskwolf.proxy.module.ProxyModuleLoader;
@@ -17,6 +18,7 @@ public final class ProxyInjectionModule extends AbstractModule {
   protected void configure() {
     install(ProxyLogInjectionModule.create());
     install(ProxyModuleInjectionModule.create());
+    install(ProxyDistributionInjectionModule.create());
   }
 
   @Provides
