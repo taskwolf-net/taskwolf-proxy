@@ -57,38 +57,6 @@ public final class ProxyClient {
   }
 
   /**
-   * Connects the client to the server in the background
-   * @param callback A future that is called when the connection process is completed
-   */
-  public void connectAsync(Runnable callback) {
-    new Thread(() -> connect(callback)).start();
-  }
-
-  private void connect(Runnable callback) {
-    connect();
-    callback.run();
-  }
-
-  /**
-   * Connects the client to the server
-   */
-  public void connect() {
-    try {
-      group = new NioEventLoopGroup();
-      channel = new Bootstrap()
-        .group(group)
-        .channel(NioSocketChannel.class)
-        .handler(ChannelEquipment.create(packetRegistry, eventExecutor,
-          clientRegistry, packetEventRepository))
-        .connect(hostname, -1)
-        .syncUninterruptibly().channel();
-    } catch (Exception exception) {
-      eventExecutor.execute(NodeDisconnectEvent.create(this,
-        NodeDisconnectEvent.DisconnectReason.CONNECTION_FAILED));
-    }
-  }
-
-  /**
    * Sends a packet to the server
    * @param packet The packet that is to be send
    * @param <T> The generic type of the packet
