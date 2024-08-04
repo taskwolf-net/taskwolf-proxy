@@ -23,22 +23,14 @@ public class ProxyApplication {
       "host,connection,content-length");
     var injector = Guice.createInjector(Modules.override(CoreInjectionModule.create())
       .with(ProxyInjectionModule.create()));
-    //System.out.print("\033c");
     injector.getInstance(Intro.class).print();
     var log = injector.getInstance(Log.class);
     log.info("Initializing Taskwolf - Proxy");
-    /*var application = new SpringApplication(ProxyApplication.class);
-    var distributionConfiguration = injector.getInstance(
-      DistributionConfiguration.class);*/
     setupDistribution(injector);
     var moduleLoader = injector.getInstance(ProxyModuleLoader.class);
     moduleLoader.loadModules();
     var commandRegistry = CommandRegistry.create();
     registerCommands(commandRegistry, injector);
-    /*application.setDefaultProperties(Collections.singletonMap("server.port",
-      distributionConfiguration.self().restPort()));
-    application.addInitializers(injector.getInstance(ProxyContextInitializer.class));
-    application.run(args);*/
     new Thread(() -> CommandTask.create(log, commandRegistry).start()).start();
     log.info("Successfully booted Taskwolf - Proxy");
   }
