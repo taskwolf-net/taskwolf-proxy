@@ -15,15 +15,22 @@ import net.taskwolf.core.packet.PacketEventRepository;
 import net.taskwolf.core.packet.PacketRegistry;
 import net.taskwolf.core.user.User;
 import net.taskwolf.core.user.UserDatabaseTable;
+import net.taskwolf.core.worker.packet.outgoing.PacketOutgoing;
 import net.taskwolf.proxy.distribution.client.ProxyClient;
 import net.taskwolf.proxy.distribution.client.ProxyClientRegistry;
+import net.taskwolf.proxy.distribution.event.database.TableDiscrepancyEvent;
+import net.taskwolf.proxy.distribution.event.database.TableTransformedEvent;
 import net.taskwolf.proxy.distribution.event.node.NodeDisconnectEvent;
 import net.taskwolf.proxy.distribution.event.node.NodeModuleLoadEvent;
 import net.taskwolf.proxy.distribution.event.node.NodeModuleUnloadEvent;
 import net.taskwolf.proxy.distribution.event.node.NodePongEvent;
+import net.taskwolf.proxy.distribution.packet.incoming.database.PacketIncomingTableDiscrepancy;
+import net.taskwolf.proxy.distribution.packet.incoming.database.PacketIncomingTableTransformed;
 import net.taskwolf.proxy.distribution.packet.incoming.node.*;
 import net.taskwolf.proxy.distribution.packet.outgoing.user.PacketOutgoingUsersReorganize;
 import net.taskwolf.proxy.distribution.server.ProxyServer;
+import net.taskwolf.proxy.distribution.server.database.TableDiscrepancyHook;
+import net.taskwolf.proxy.distribution.server.database.TableTransformedHook;
 import net.taskwolf.proxy.distribution.server.node.*;
 
 import java.util.List;
@@ -68,6 +75,8 @@ public final class ProxyDistribution {
     packetRegistry.registerPacket(PacketIncomingDisconnect.class);
     packetRegistry.registerPacket(PacketIncomingModuleLoad.class);
     packetRegistry.registerPacket(PacketIncomingModuleUnload.class);
+    packetRegistry.registerPacket(PacketIncomingTableDiscrepancy.class);
+    packetRegistry.registerPacket(PacketIncomingTableTransformed.class);
   }
 
   private void registerHooks() {
@@ -77,6 +86,8 @@ public final class ProxyDistribution {
     hookRegistry.register(injector.getInstance(NodeModuleLoadHook.class));
     hookRegistry.register(injector.getInstance(NodeModuleUnloadHook.class));
     hookRegistry.register(NodeDisconnectHook.create(this, clientRegistry, log));
+    hookRegistry.register(injector.getInstance(TableDiscrepancyHook.class));
+    hookRegistry.register(injector.getInstance(TableTransformedHook.class));
   }
 
   private void registerEvents() {
@@ -92,6 +103,10 @@ public final class ProxyDistribution {
     packetEventRepository.<ProxyClient, PacketIncomingModuleUnload>registerEvent(
       PacketIncomingModuleUnload.class, (client, packet) ->
         NodeModuleUnloadEvent.create(client, packet.module()));
+    packetEventRepository.registerEvent(PacketIncomingTableDiscrepancy.class,
+      (client, packet) -> TableDiscrepancyEvent.create(packet.tableClass()));
+    packetEventRepository.registerEvent(PacketIncomingTableTransformed.class,
+      (client, packet) -> TableTransformedEvent.create(packet.tableClass()));
   }
 
   /**
@@ -154,6 +169,14 @@ public final class ProxyDistribution {
       loadedModule.addAll(client.condition().findLoadedModules());
     }
     return loadedModule.stream().distinct().toList();
+  }
+
+  /**
+   * Sends an outgoing packet to all registered clients
+   * @param packet The packet that will be sent
+   */
+  public void broadcastPacket(PacketOutgoing packet) {
+    proxyServer.broadcastPacket(packet);
   }
 
   /**
