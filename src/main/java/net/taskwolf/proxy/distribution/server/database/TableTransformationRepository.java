@@ -1,5 +1,6 @@
 package net.taskwolf.proxy.distribution.server.database;
 
+import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.kubernetes.client.openapi.ApiCallback;
@@ -8,35 +9,40 @@ import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.compress.utils.Lists;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Singleton
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({@Inject}))
 public final class TableTransformationRepository {
   private final AppsV1Api kubernetesApi;
-  private final List<TableTransformation> transformations = Lists.newArrayList();
+  private final Set<TableTransformation> transformations = Collections.newSetFromMap(
+    CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(5))
+      .<TableTransformation, Boolean>build().asMap());
 
   public CompletableFuture<Boolean> recogniseDiscrepancy(
     String tableClass
   ) throws Exception {
-    var transformation = findTransformation(tableClass);
-    if (transformation.isPresent()) {
+    var transformationOptional = findTransformation(tableClass);
+    if (transformationOptional.isPresent()) {
       return CompletableFuture.completedFuture(
-        finishDiscrepancyRecognition(transformation.get()));
+        finishDiscrepancyRecognition(transformationOptional.get()));
     }
-    return findCoreReplicas()
-      .thenApply(replicas -> TableTransformation.create(tableClass, replicas, 0))
-      .thenApply(this::finishDiscrepancyRecognition);
+    var transformation = findCoreReplicas()
+      .thenApply(replicas -> TableTransformation.create(tableClass, replicas, 0));
+    transformation.thenAccept(transformations::add);
+    return transformation.thenApply(this::finishDiscrepancyRecognition);
   }
 
   private boolean finishDiscrepancyRecognition(TableTransformation transformation) {
     transformation.addDiscrepancy();
-    return transformation.discrepancies() == transformation.replicas();
+    var ready = transformation.discrepancies() == transformation.replicas();
+    if (ready) {
+      transformations.remove(transformation);
+    }
+    return ready;
   }
 
   private static final String CORE_DEPLOYMENT_NAME = "taskwolf-core-deployment";
@@ -79,9 +85,7 @@ public final class TableTransformationRepository {
   }
 
   public Optional<TableTransformation> findTransformation(String tableClass) {
-    return transformations.stream()
-      .filter(transformation ->
-        transformation.tableClass().equalsIgnoreCase(tableClass))
-      .findFirst();
+    return transformations.stream().filter(transformation ->
+      transformation.tableClass().equalsIgnoreCase(tableClass)).findFirst();
   }
 }
