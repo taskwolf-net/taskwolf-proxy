@@ -24,18 +24,20 @@ public final class TableStateChangeRepository {
     CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(5))
       .<TableStateChange, Boolean>build().asMap());
 
-  public CompletableFuture<Optional<TableStateChange>> recogniseResponse(
+  public CompletableFuture<TableStateChange> registerStateChange(
     String tableClass, DatabaseTransformationState state, ProxyClient client
   ) throws Exception {
-    var responseOptional = findStateChange(tableClass, state);
-    if (responseOptional.isPresent()) {
-      return CompletableFuture.completedFuture(
-        finishResponseRecognition(responseOptional.get()));
-    }
     var change = findCoreReplicas().thenApply(replicas ->
       TableStateChange.create(tableClass, state, replicas, 0, client));
     change.thenAccept(changes::add);
-    return change.thenApply(this::finishResponseRecognition);
+    return change;
+  }
+
+  public Optional<TableStateChange> recogniseResponse(
+    String tableClass, DatabaseTransformationState state
+  ) {
+    return findStateChange(tableClass, state)
+      .flatMap(this::finishResponseRecognition);
   }
 
   private Optional<TableStateChange> finishResponseRecognition(
