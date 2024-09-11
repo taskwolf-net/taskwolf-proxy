@@ -21,6 +21,7 @@ public final class TableDiscrepancyHook implements Hook {
   @EventHook
   private void tableDiscrepancy(TableDiscrepancyEvent event) throws Exception {
     var tableClass = event.tableClass();
+    log.info("A discrepancy regarding the table " + tableClass + " was reported");
     transformationRepository.recogniseDiscrepancy(tableClass)
       .thenAccept(ready -> processDiscrepancy(tableClass, ready));
   }
