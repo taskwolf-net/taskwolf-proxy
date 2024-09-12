@@ -161,10 +161,11 @@ public final class ProxyDistribution {
    */
   public CompletableFuture<List<UUID>> findAllPossibleUser() {
     var futureResponse = new CompletableFuture<List<UUID>>();
-    userDatabaseTable.findAllUsers().thenAccept(users ->
+    new Thread(() -> userDatabaseTable.findAllUsers().thenAccept(users ->
       organizationDatabaseTable.findAllOrganization().thenAccept(organizations ->
         futureResponse.complete(Stream.concat(users.stream().map(User::id),
-          organizations.stream().map(Organization::id)).collect(Collectors.toList()))));
+          organizations.stream().map(Organization::id)).collect(Collectors.toList())))))
+      .start();
     return futureResponse;
   }
 
