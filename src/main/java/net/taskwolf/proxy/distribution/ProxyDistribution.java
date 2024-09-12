@@ -22,8 +22,8 @@ import net.taskwolf.proxy.distribution.event.database.TableDiscrepancyEvent;
 import net.taskwolf.proxy.distribution.event.database.TableStateRequestEvent;
 import net.taskwolf.proxy.distribution.event.database.TableStateResponseEvent;
 import net.taskwolf.proxy.distribution.event.node.NodeDisconnectEvent;
-import net.taskwolf.proxy.distribution.event.node.NodeModuleLoadEvent;
-import net.taskwolf.proxy.distribution.event.node.NodeModuleUnloadEvent;
+import net.taskwolf.proxy.distribution.event.node.NodeModulesLoadEvent;
+import net.taskwolf.proxy.distribution.event.node.NodeModulesUnloadEvent;
 import net.taskwolf.proxy.distribution.event.node.NodePongEvent;
 import net.taskwolf.proxy.distribution.packet.incoming.database.PacketIncomingTableDiscrepancy;
 import net.taskwolf.proxy.distribution.packet.incoming.database.PacketIncomingTableStateRequest;
@@ -76,8 +76,8 @@ public final class ProxyDistribution {
     packetRegistry.registerPacket(PacketIncomingHandshakeRequest.class);
     packetRegistry.registerPacket(PacketIncomingPong.class);
     packetRegistry.registerPacket(PacketIncomingDisconnect.class);
-    packetRegistry.registerPacket(PacketIncomingModuleLoad.class);
-    packetRegistry.registerPacket(PacketIncomingModuleUnload.class);
+    packetRegistry.registerPacket(PacketIncomingModulesLoad.class);
+    packetRegistry.registerPacket(PacketIncomingModulesUnload.class);
     packetRegistry.registerPacket(PacketIncomingTableDiscrepancy.class);
     packetRegistry.registerPacket(PacketIncomingTableStateRequest.class);
     packetRegistry.registerPacket(PacketIncomingTableStateResponse.class);
@@ -87,8 +87,8 @@ public final class ProxyDistribution {
     hookRegistry.register(NodeHandshakeRequestHook.create(configuration,
       packetRegistry, eventExecutor, clientRegistry, packetEventRepository, log));
     hookRegistry.register(injector.getInstance(NodePongHook.class));
-    hookRegistry.register(injector.getInstance(NodeModuleLoadHook.class));
-    hookRegistry.register(injector.getInstance(NodeModuleUnloadHook.class));
+    hookRegistry.register(injector.getInstance(NodeModulesLoadHook.class));
+    hookRegistry.register(injector.getInstance(NodeModulesUnloadHook.class));
     hookRegistry.register(NodeDisconnectHook.create(this, clientRegistry, log));
     hookRegistry.register(injector.getInstance(TableDiscrepancyHook.class));
     hookRegistry.register(injector.getInstance(TableStateRequestHook.class));
@@ -102,12 +102,12 @@ public final class ProxyDistribution {
     packetEventRepository.<ProxyClient, PacketIncomingDisconnect>registerEvent(
       PacketIncomingDisconnect.class, (client, packet) -> NodeDisconnectEvent.create(
         client, NodeDisconnectEvent.DisconnectReason.SHUTDOWN));
-    packetEventRepository.<ProxyClient, PacketIncomingModuleLoad>registerEvent(
-      PacketIncomingModuleLoad.class, (client, packet) ->
-        NodeModuleLoadEvent.create(client, packet.module()));
-    packetEventRepository.<ProxyClient, PacketIncomingModuleUnload>registerEvent(
-      PacketIncomingModuleUnload.class, (client, packet) ->
-        NodeModuleUnloadEvent.create(client, packet.module()));
+    packetEventRepository.<ProxyClient, PacketIncomingModulesLoad>registerEvent(
+      PacketIncomingModulesLoad.class, (client, packet) ->
+        NodeModulesLoadEvent.create(client, packet.modules()));
+    packetEventRepository.<ProxyClient, PacketIncomingModulesUnload>registerEvent(
+      PacketIncomingModulesUnload.class, (client, packet) ->
+        NodeModulesUnloadEvent.create(client, packet.modules()));
     packetEventRepository.registerEvent(PacketIncomingTableDiscrepancy.class,
       (client, packet) -> TableDiscrepancyEvent.create(packet.tableClass()));
     packetEventRepository.<ProxyClient, PacketIncomingTableStateRequest>registerEvent(
@@ -123,16 +123,8 @@ public final class ProxyDistribution {
    * distribution network (on all nodes) (enables constant and equal user distribution)
    */
   public void reorganizeUsers() {
-    findLoadedModules().forEach(this::reorganizeUsers);
-  }
-
-  /**
-   * Reorganizes users that are assigned to a module in the whole distribution
-   * network (on all nodes) (enables constant and equal user distribution)
-   * @param module The module that will be reorganized
-   */
-  public void reorganizeUsers(String module) {
-    findAllPossibleUser().thenAccept(users -> reorganizeUsers(module, users));
+    findAllPossibleUser().thenAccept(users -> findLoadedModules()
+      .forEach(module -> reorganizeUsers(module, users)));
   }
 
   private void reorganizeUsers(String module, List<UUID> allUsers) {

@@ -7,16 +7,16 @@ import lombok.RequiredArgsConstructor;
 import net.taskwolf.core.event.EventHook;
 import net.taskwolf.core.event.Hook;
 import net.taskwolf.proxy.distribution.ProxyDistribution;
-import net.taskwolf.proxy.distribution.event.node.NodeModuleLoadEvent;
+import net.taskwolf.proxy.distribution.event.node.NodeModulesLoadEvent;
 
 @Singleton
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({@Inject}))
-public final class NodeModuleLoadHook implements Hook {
+public final class NodeModulesLoadHook implements Hook {
   private final ProxyDistribution distribution;
 
   @EventHook
-  private void nodeModuleLoad(NodeModuleLoadEvent event) {
-    event.client().condition().addModule(event.module());
+  private void nodeModulesLoad(NodeModulesLoadEvent event) {
+    event.client().condition().addMultipleModules(event.modules());
     distribution.reorganizeUsers();
   }
 }
