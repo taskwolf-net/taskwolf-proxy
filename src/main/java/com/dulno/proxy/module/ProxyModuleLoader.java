@@ -104,7 +104,7 @@ public final class ProxyModuleLoader {
   ) throws Exception {
     var entryName = entry.getName();
     if (entry.isDirectory() || !entryName.endsWith(".class") ||
-      !entryName.startsWith("net/dulno")
+      !entryName.startsWith("com/dulno")
     ) {
       return Optional.empty();
     }
