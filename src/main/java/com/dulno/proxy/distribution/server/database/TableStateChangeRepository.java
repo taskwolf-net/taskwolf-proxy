@@ -1,5 +1,6 @@
 package com.dulno.proxy.distribution.server.database;
 
+import com.dulno.core.error.ErrorRepository;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -20,13 +21,14 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({@Inject}))
 public final class TableStateChangeRepository {
   private final AppsV1Api kubernetesApi;
+  private final ErrorRepository errorRepository;
   private final Set<TableStateChange> changes = Collections.newSetFromMap(
     CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(5))
       .<TableStateChange, Boolean>build().asMap());
 
   public CompletableFuture<TableStateChange> registerStateChange(
     String tableClass, DatabaseTransformationState state, ProxyClient client
-  ) throws Exception {
+  ) {
     var change = findCoreReplicas().thenApply(replicas ->
       TableStateChange.create(tableClass, state, replicas, 0, client));
     change.thenAccept(changes::add);
@@ -55,40 +57,45 @@ public final class TableStateChangeRepository {
   private static final String CORE_DEPLOYMENT_NAME = "dulno-core-deployment";
   private static final String CORE_DEPLOYMENT_NAMESPACE = "default";
 
-  private CompletableFuture<Integer> findCoreReplicas() throws Exception {
+  private CompletableFuture<Integer> findCoreReplicas() {
     var futureResponse = new CompletableFuture<Integer>();
     var deploymentRequest = kubernetesApi.readNamespacedDeployment(
       CORE_DEPLOYMENT_NAME, CORE_DEPLOYMENT_NAMESPACE);
-    deploymentRequest.executeAsync(new ApiCallback<>() {
-      @Override
-      public void onFailure(
-        ApiException exception, int statusCode, Map<String,
-        List<String>> responseHeaders
-      ) {
-        exception.printStackTrace();
-      }
+    try {
+      deploymentRequest.executeAsync(new ApiCallback<>() {
+        @Override
+        public void onFailure(
+          ApiException exception, int statusCode, Map<String,
+          List<String>> responseHeaders
+        ) {
+          errorRepository.processError(exception);
+        }
 
-      @Override
-      public void onSuccess(
-        V1Deployment result, int statusCode,
-        Map<String, List<String>> responseHeaders
-      ) {
-        futureResponse.complete(result.getSpec().getReplicas());
-      }
+        @Override
+        public void onSuccess(
+          V1Deployment result, int statusCode,
+          Map<String, List<String>> responseHeaders
+        ) {
+          futureResponse.complete(result.getSpec().getReplicas());
+        }
 
-      @Override
-      public void onUploadProgress(
-        long bytesWritten, long contentLength, boolean done
-      ) {
-      }
+        @Override
+        public void onUploadProgress(
+          long bytesWritten, long contentLength, boolean done
+        ) {
+        }
 
-      @Override
-      public void onDownloadProgress(
-        long bytesRead, long contentLength, boolean done
-      ) {
-      }
-    });
-    return futureResponse;
+        @Override
+        public void onDownloadProgress(
+          long bytesRead, long contentLength, boolean done
+        ) {
+        }
+      });
+      return futureResponse;
+    } catch (Exception exception) {
+      errorRepository.processError(exception);
+      return CompletableFuture.completedFuture(0);
+    }
   }
 
   public Optional<TableStateChange> findStateChange(

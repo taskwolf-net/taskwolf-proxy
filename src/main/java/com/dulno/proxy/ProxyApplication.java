@@ -1,5 +1,7 @@
 package com.dulno.proxy;
 
+import com.dulno.core.database.DatabaseConnection;
+import com.dulno.core.error.ErrorRepository;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
@@ -23,6 +25,10 @@ public class ProxyApplication {
       "host,connection,content-length");
     var injector = Guice.createInjector(Modules.override(CoreInjectionModule.create())
       .with(ProxyInjectionModule.create()));
+    var errorRepository = injector.getInstance(ErrorRepository.class);
+    Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
+      errorRepository.processError(throwable));
+    injector.getInstance(DatabaseConnection.class).errorRepository(errorRepository);
     injector.getInstance(Intro.class).print();
     var log = injector.getInstance(Log.class);
     log.info("Initializing Dulno - Proxy");
@@ -31,7 +37,8 @@ public class ProxyApplication {
     moduleLoader.loadModules();
     var commandRegistry = CommandRegistry.create();
     registerCommands(commandRegistry, injector);
-    new Thread(() -> CommandTask.create(log, commandRegistry).start()).start();
+    new Thread(() -> CommandTask.create(log, errorRepository, commandRegistry)
+      .start()).start();
     log.info("Successfully booted Dulno - Proxy");
   }
 

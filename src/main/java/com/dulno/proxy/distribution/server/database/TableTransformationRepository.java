@@ -1,5 +1,6 @@
 package com.dulno.proxy.distribution.server.database;
 
+import com.dulno.core.error.ErrorRepository;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -18,13 +19,14 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({@Inject}))
 public final class TableTransformationRepository {
   private final AppsV1Api kubernetesApi;
+  private final ErrorRepository errorRepository;
   private final Set<TableTransformation> transformations = Collections.newSetFromMap(
     CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(5))
       .<TableTransformation, Boolean>build().asMap());
 
   public CompletableFuture<Boolean> recogniseDiscrepancy(
     String tableClass
-  ) throws Exception {
+  ) {
     var transformationOptional = findTransformation(tableClass);
     if (transformationOptional.isPresent()) {
       return CompletableFuture.completedFuture(
@@ -48,17 +50,18 @@ public final class TableTransformationRepository {
   private static final String CORE_DEPLOYMENT_NAME = "dulno-core-deployment";
   private static final String CORE_DEPLOYMENT_NAMESPACE = "default";
 
-  private CompletableFuture<Integer> findCoreReplicas() throws Exception {
+  private CompletableFuture<Integer> findCoreReplicas() {
     var futureResponse = new CompletableFuture<Integer>();
     var deploymentRequest = kubernetesApi.readNamespacedDeployment(
       CORE_DEPLOYMENT_NAME, CORE_DEPLOYMENT_NAMESPACE);
-    deploymentRequest.executeAsync(new ApiCallback<>() {
+    try {
+      deploymentRequest.executeAsync(new ApiCallback<>() {
         @Override
         public void onFailure(
           ApiException exception, int statusCode, Map<String,
           List<String>> responseHeaders
         ) {
-          exception.printStackTrace();
+          errorRepository.processError(exception);
         }
 
         @Override
@@ -81,7 +84,11 @@ public final class TableTransformationRepository {
         ) {
         }
       });
-    return futureResponse;
+      return futureResponse;
+    } catch (Exception exception) {
+      errorRepository.processError(exception);
+      return CompletableFuture.completedFuture(0);
+    }
   }
 
   public Optional<TableTransformation> findTransformation(String tableClass) {
