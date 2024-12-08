@@ -69,7 +69,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-web:3.2.5")
 
-  implementation("io.jsonwebtoken:jjwt:0.12.5")
+  implementation("io.jsonwebtoken:jjwt:0.12.6")
 
   implementation("io.kubernetes:client-java:21.0.2")
 }
