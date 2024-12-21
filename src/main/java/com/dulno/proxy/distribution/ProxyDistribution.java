@@ -138,13 +138,16 @@ public final class ProxyDistribution {
   }
 
   private List<List<UUID>> divideUsers(List<UUID> allUsers, long nodes) {
-    var result = Lists.<List<UUID>>newArrayList();
-    int size = (int) Math.floor((double) allUsers.size() / nodes);
-    for (var start = 0; start < allUsers.size(); start += size) {
-      var end = Math.min(start + size, allUsers.size());
-      result.add(allUsers.subList(start, end));
+    var size = allUsers.size();
+    var partSize = (int) (size / nodes);
+    var remainder = (int) (size % nodes);
+    var parts = Lists.<List<UUID>>newArrayList();
+    for (int i = 0, start = 0; i < nodes; i++) {
+      var end = start + partSize + (i < remainder ? 1 : 0);
+      parts.add(Lists.newArrayList(allUsers.subList(start, end)));
+      start = end;
     }
-    return result;
+    return parts;
   }
 
   /**
