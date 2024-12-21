@@ -1,7 +1,7 @@
 plugins {
   id("java")
   id("maven-publish")
-  id("org.springframework.boot") version "3.2.5"
+  id("org.springframework.boot") version "3.4.0"
 }
 
 group = "com.dulno"
@@ -46,32 +46,32 @@ repositories {
 }
 
 dependencies {
-  testImplementation(platform("org.junit:junit-bom:5.10.2"))
-  testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+  testImplementation(platform("org.junit:junit-bom:5.11.3"))
+  testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
 
   implementation("com.dulno:core:1.0.0-SNAPSHOT")
 
   implementation("com.google.inject:guice:7.0.0")
 
-  implementation("com.google.guava:guava:33.1.0-jre")
+  implementation("com.google.guava:guava:33.3.1-jre")
 
-  implementation("org.projectlombok:lombok:1.18.32")
-  annotationProcessor("org.projectlombok:lombok:1.18.32")
-  testImplementation("org.projectlombok:lombok:1.18.32")
-  testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
+  implementation("org.projectlombok:lombok:1.18.36")
+  annotationProcessor("org.projectlombok:lombok:1.18.36")
+  testImplementation("org.projectlombok:lombok:1.18.36")
+  testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
 
   implementation("com.datastax.oss:java-driver-core:4.17.0")
 
   implementation("org.json:json:20240303")
-  implementation("commons-io:commons-io:2.16.1")
+  implementation("commons-io:commons-io:2.18.0")
 
-  implementation("io.netty:netty-all:4.1.109.Final")
+  implementation("io.netty:netty-all:4.1.115.Final")
 
-  implementation("org.springframework.boot:spring-boot-starter-web:3.2.5")
+  implementation("org.springframework.boot:spring-boot-starter-web:3.4.0")
 
-  implementation("io.jsonwebtoken:jjwt:0.12.5")
+  implementation("io.jsonwebtoken:jjwt:0.12.6")
 
-  implementation("io.kubernetes:client-java:21.0.2")
+  implementation("io.kubernetes:client-java:22.0.0")
 }
 
 tasks.test {
