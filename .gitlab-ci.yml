@@ -1,9 +1,41 @@
-image: gradle:8.12-jdk21
+stages:
+  - build
+  - publish
+  - deploy
 
-before_script:
-  - export TASKWOLF_GITLAB_PRIVATE_TOKEN="$TASKWOLF_GITLAB_PRIVATE_TOKEN"
+variables:
+  DOCKER_IMAGE: "$DOCKER_REGISTRY/dulno-proxy"
 
 build:
   stage: build
+  image: gradle:8.12-jdk21
   script:
-    - gradle assemble
+    - gradle bootJar
+  artifacts:
+    paths:
+      - build/libs/
+
+publish:
+  stage: publish
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - build
+  script:
+    - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
+    - docker build -t $DOCKER_IMAGE:latest .
+    - docker push $DOCKER_IMAGE:latest
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    - mkdir -p ~/.kube
+    - echo "$KUBERNETES_CONFIGURATION" > ~/.kube/config
+  script:
+    - kubectl rollout restart deployment/dulno-proxy-deployment
+  only:
+    - master
