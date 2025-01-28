@@ -17,19 +17,22 @@ build:
     expire_in: 1 day
 
 publish:
+  stage: publish
   image: docker:cli
-  stage: build
   services:
-    - docker:dind
+    - name: docker:dind
+      alias: docker
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
-  before_script:
-    - apk add --update --no-cache git
   dependencies:
     - build
   script:
+    - apk add --update --no-cache bind-tools
+    - nslookup docker
+    - ping -c 3 docker
+    - echo $DOCKER_HOST
     - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
     - docker build -t $DOCKER_IMAGE:latest .
     - docker push $DOCKER_IMAGE:latest
@@ -39,6 +42,8 @@ publish:
 deploy:
   stage: deploy
   image: bitnami/kubectl:latest
+  dependencies:
+    - publish
   before_script:
     - mkdir -p ~/.kube
     - echo "$KUBERNETES_CONFIGURATION" > ~/.kube/config
