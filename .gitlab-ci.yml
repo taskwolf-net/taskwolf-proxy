@@ -17,14 +17,16 @@ build:
     expire_in: 1 day
 
 publish:
-  stage: publish
-  image: docker:latest
+  image: docker:cli
+  stage: build
   services:
-    - name: docker:dind
-      alias: docker
+    - docker:dind
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - apk add --update --no-cache git
   dependencies:
     - build
   script:
