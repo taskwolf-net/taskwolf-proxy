@@ -23,16 +23,15 @@ publish:
     - name: docker:dind
       alias: docker
   variables:
-    DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   dependencies:
     - build
   script:
-    - apk add --update --no-cache bind-tools
-    - nslookup docker
-    - ping -c 3 docker
-    - echo $DOCKER_HOST
+    - ping localhost
+    - ping docker
+    - cat /etc/resolv.conf
     - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
     - docker build -t $DOCKER_IMAGE:latest .
     - docker push $DOCKER_IMAGE:latest
