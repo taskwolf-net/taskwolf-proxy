@@ -20,11 +20,9 @@ publish:
   stage: publish
   image: docker:cli
   services:
-    - name: docker:dind
-      alias: docker
-      command: [ "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock" ]
+    - docker:dind
   variables:
-    DOCKER_HOST: tcp://0.0.0.0:2375
+    DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   dependencies:
