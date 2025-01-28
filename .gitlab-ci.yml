@@ -29,8 +29,6 @@ publish:
   dependencies:
     - build
   script:
-    - ping localhost
-    - ping docker
     - cat /etc/resolv.conf
     - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
     - docker build -t $DOCKER_IMAGE:latest .
