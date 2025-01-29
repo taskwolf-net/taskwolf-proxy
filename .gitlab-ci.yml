@@ -37,7 +37,6 @@ publish:
 deploy:
   stage: deploy
   trigger:
-    project: $PROXY_PIPELINE_PROJECT
     branch: $PROXY_PIPELINE_BRANCH
   only:
     - master
