@@ -37,6 +37,9 @@ publish:
 deploy:
   stage: deploy
   trigger:
-    branch: $PROXY_PIPELINE_BRANCH
+    include:
+      - project: $PROXY_PIPELINE_PROJECT
+        ref: $PROXY_PIPELINE_BRANCH
+        file: '.gitlab-ci.yml'
   only:
     - master
