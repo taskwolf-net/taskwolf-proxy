@@ -5,7 +5,7 @@ stages:
 
 variables:
   DOCKER_IMAGE: "dulno-proxy-base"
-  DOCKER_DOCS_IMAGE: "dulno-core-proxy-docs"
+  DOCKER_DOCS_IMAGE: "dulno-proxy-docs"
 
 build:
   stage: build
