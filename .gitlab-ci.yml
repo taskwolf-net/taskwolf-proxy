@@ -11,7 +11,7 @@ build:
   stage: build
   image: gradle:8.12.0-jdk21
   script:
-    - gradle jar
+    - gradle bootJar
     - gradle javadoc
   artifacts:
     paths:
