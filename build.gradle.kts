@@ -72,7 +72,7 @@ dependencies {
 
   implementation("io.jsonwebtoken:jjwt:0.12.6")
 
-  implementation("io.kubernetes:client-java:22.0.1")
+  implementation("io.kubernetes:client-java:23.0.0")
 }
 
 tasks.test {
