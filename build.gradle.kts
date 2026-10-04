@@ -4,7 +4,7 @@ plugins {
   id("org.springframework.boot") version "3.4.3"
 }
 
-group = "com.dulno"
+group = "net.taskwolf"
 version = "1.0.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_21
 java.targetCompatibility = JavaVersion.VERSION_21
@@ -18,7 +18,7 @@ dependencies {
   testImplementation(platform("org.junit:junit-bom:5.12.0"))
   testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
 
-  implementation("com.dulno:core:1.0.0-SNAPSHOT")
+  implementation("net.taskwolf:core:1.0.0-SNAPSHOT")
 
   implementation("com.google.inject:guice:7.0.0")
 
@@ -48,5 +48,5 @@ tasks.test {
 }
 
 tasks.bootJar {
-  mainClass = "com.dulno.proxy.ProxyApplication"
+  mainClass = "net.taskwolf.proxy.ProxyApplication"
 }

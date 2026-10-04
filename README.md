@@ -1,4 +1,4 @@
-# Dulno - Proxy
+# Taskwolf - Proxy
 
 [![CI](https://github.com/taskwolf-net/taskwolf-proxy/actions/workflows/ci.yml/badge.svg)](https://github.com/taskwolf-net/taskwolf-proxy/actions/workflows/ci.yml)
 
