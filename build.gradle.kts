@@ -1,6 +1,5 @@
 plugins {
   id("java")
-  id("maven-publish")
   id("io.freefair.lombok") version "8.13"
   id("org.springframework.boot") version "3.4.3"
 }
@@ -10,40 +9,9 @@ version = "1.0.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_21
 java.targetCompatibility = JavaVersion.VERSION_21
 
-publishing {
-  publications {
-    create<MavenPublication>("library") {
-      from(components["java"])
-    }
-  }
-  repositories {
-    maven {
-      url = uri("https://git.dulno.com/api/v4/projects/13/packages/maven")
-      credentials(HttpHeaderCredentials::class) {
-        name = "Private-Token"
-        value = System.getenv("DULNO_GITLAB_PRIVATE_TOKEN") ?:
-          findProperty("dulnoGitlabPrivateToken") as String?
-      }
-      authentication {
-        create("header", HttpHeaderAuthentication::class)
-      }
-    }
-  }
-}
-
 repositories {
   mavenCentral()
-  maven {
-    url = uri("https://git.dulno.com/api/v4/projects/8/packages/maven")
-    credentials(HttpHeaderCredentials::class) {
-      name = "Private-Token"
-      value = System.getenv("DULNO_GITLAB_PRIVATE_TOKEN") ?:
-        findProperty("dulnoGitlabPrivateToken") as String?
-    }
-    authentication {
-      create("header", HttpHeaderAuthentication::class)
-    }
-  }
+  mavenLocal()
 }
 
 dependencies {
