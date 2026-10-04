@@ -1,5 +1,6 @@
 plugins {
   id("java")
+  id("maven-publish")
   id("io.freefair.lombok") version "8.13"
   id("org.springframework.boot") version "3.4.3"
 }
@@ -8,6 +9,14 @@ group = "net.taskwolf"
 version = "1.0.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_21
 java.targetCompatibility = JavaVersion.VERSION_21
+
+publishing {
+  publications {
+    create<MavenPublication>("library") {
+      from(components["java"])
+    }
+  }
+}
 
 repositories {
   mavenCentral()
