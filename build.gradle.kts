@@ -1,8 +1,8 @@
 plugins {
   id("java")
   id("maven-publish")
-  id("io.freefair.lombok") version "9.8.0"
-  id("org.springframework.boot") version "4.1.1"
+  id("io.freefair.lombok") version "9.8.2"
+  id("org.springframework.boot") version "4.1.2"
 }
 
 group = "net.taskwolf"
@@ -43,13 +43,13 @@ dependencies {
   implementation("org.json:json:20260814")
   implementation("commons-io:commons-io:2.22.0")
 
-  implementation("io.netty:netty-all:4.2.18.Final")
+  implementation("io.netty:netty-all:4.2.19.Final")
 
-  implementation("org.springframework.boot:spring-boot-starter-web:4.1.1")
+  implementation("org.springframework.boot:spring-boot-starter-web:4.1.2")
 
   implementation("io.jsonwebtoken:jjwt:0.13.0")
 
-  implementation("io.kubernetes:client-java:27.0.0")
+  implementation("io.kubernetes:client-java:28.0.0")
 }
 
 tasks.test {
